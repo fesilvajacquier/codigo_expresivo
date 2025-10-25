@@ -47,7 +47,11 @@
 							<h3>Me llamo Fernando</h3>
 						</div>
 						<aside class="notes">
-							[SPEAKER NOTES: Explicar cómo estas tres formas dicen lo mismo pero con sutiles diferencias. Anticipar que volveremos a esto al final.]
+							Son distintas formas de expresar lo mismo.
+
+							Tal vez, sin darme cuenta, el contexto define cuál elijo. A un hablante de una lengua sajona podría decirle "Mi nombre es Fernando" (cercano a "My name is Fernando"), pero a un hablante de una lengua romance podría decirle "Me llamo Fernando" (cercano a "Je m'appelle Fernando").
+
+							Anticipar que volveremos a esto al final para cerrar el círculo.
 						</aside>
 					</section>
 
@@ -58,7 +62,11 @@
 						<p class="fragment">En programación, especialmente en Ruby, también</p>
 						<p class="fragment">¿Es esto bueno o malo?</p>
 						<aside class="notes">
-							[SPEAKER NOTES: Plantear la tensión central de la charla. Esta es la pregunta que vamos a explorar.]
+							Con el código, es parecido.
+
+							Hay ocasiones en las que una manera de expresar algo es mejor que otra debido al contexto.
+
+							Esta es la tensión central de la charla: múltiples opciones pueden ser problemáticas, pero también valiosas.
 						</aside>
 					</section>
 				</section>
@@ -81,17 +89,62 @@
 						<h2>Memory bloat</h2>
 						<pre><code data-trim data-noescape class="language-ruby">
 # ❌ Carga TODOS los usuarios en memoria
-User.all.each do |user|
-  user.send_notification
+User.all.each do
+  UserMailer.with(user: it).payment_reminder.deliver_later
 end
 
 <span class="fragment"># ✅ Procesa en batches de 1000
 User.find_each do |user|
-  user.send_notification
+  UserMailer.with(user: user).payment_reminder.deliver_later
 end</span>
 						</code></pre>
 						<aside class="notes">
-							[SPEAKER NOTES: Explicar cómo .each carga todo en memoria vs find_each que procesa en batches. Mencionar el research sobre performance y trade-offs.]
+							El cómo puede ser tan importante como el qué.
+
+							.each carga todos los registros en memoria de una sola vez. Con 100K usuarios, esto puede significar varios GB de RAM.
+
+							.find_each procesa en batches de 1000. Carga 1000, procesa, libera memoria, carga los siguientes 1000.
+
+							Nota: Ruby 3.4 introduce "it" como variable de bloque implícita.
+						</aside>
+					</section>
+
+					<!-- Slide 2.2b: Memory profiler example (TODO) -->
+					<section>
+						<h2>Midiendo el impacto real</h2>
+						<p class="fragment">TODO: Agregar ejemplo con memory_profiler</p>
+						<pre class="fragment"><code data-trim data-noescape class="language-ruby">
+# Ejemplo con memory_profiler mostrando:
+# - Memory allocations para .each
+# - Memory allocations para .find_each
+# - Diferencia en MB/GB
+						</code></pre>
+						<aside class="notes">
+							TODO: Ejecutar memory_profiler en ambos casos y mostrar resultados reales.
+
+							Mostrar:
+							- Total memory allocated
+							- Total memory retained
+							- Peak memory usage
+						</aside>
+					</section>
+
+					<!-- Slide 2.2c: Work distribution graph (TODO) -->
+					<section>
+						<h2>Distribución del trabajo</h2>
+						<p class="fragment">TODO: Agregar gráfico de distribución del trabajo</p>
+						<div class="fragment">
+							<p>Visualización comparando:</p>
+							<ul>
+								<li>.each: Un bloque monolítico de memoria</li>
+								<li>.find_each: Múltiples bloques pequeños con GC entre medio</li>
+							</ul>
+						</div>
+						<aside class="notes">
+							TODO: Crear gráfico mostrando timeline de:
+							- Uso de memoria a lo largo del tiempo
+							- Puntos donde el GC puede actuar con find_each
+							- Por qué .each no permite GC hasta el final
 						</aside>
 					</section>
 
@@ -125,7 +178,57 @@ User.where(active: true).exists?
 User.where(active: true).any?</span>
 						</code></pre>
 						<aside class="notes">
-							[SPEAKER NOTES: Profundizar en cómo cada método implementa la verificación. Mostrar las queries SQL reales.]
+							Profundizar en cómo cada método implementa la verificación.
+
+							present?: Materializa todos los registros en memoria, luego verifica si el array está vacío
+							exists?: Solo pregunta a la DB "¿hay al menos 1?", no trae datos
+							any?: Depende del contexto - puede usar la estrategia de present? o exists?
+
+							Mostrar las queries SQL reales para evidenciar la diferencia.
+						</aside>
+					</section>
+
+					<!-- Slide 2.4b: Memory profiler comparison (TODO) -->
+					<section>
+						<h2>El costo real de cada opción</h2>
+						<p class="fragment">TODO: Agregar ejemplo con memory_profiler</p>
+						<pre class="fragment"><code data-trim data-noescape class="language-ruby">
+# Comparación de memory allocations:
+# User.where(active: true).present?
+# vs
+# User.where(active: true).exists?
+#
+# Mostrar diferencia en MB especialmente con muchos registros
+						</code></pre>
+						<aside class="notes">
+							TODO: Ejecutar memory_profiler comparando present? vs exists? con diferentes volúmenes de datos.
+
+							Mostrar cómo present? escala linealmente con la cantidad de registros, mientras exists? es O(1).
+						</aside>
+					</section>
+
+					<!-- Slide 2.4c: Real-world view example (TODO) -->
+					<section>
+						<h2>Caso real: Contador de emails no leídos</h2>
+						<p class="fragment">TODO: Agregar snippet de vista HTML.ERB</p>
+						<pre class="fragment"><code data-trim data-noescape class="language-erb">
+&lt;%# app/views/layouts/_header.html.erb %&gt;
+&lt;div class="inbox-counter"&gt;
+  &lt;% if @unread_emails.present? %&gt;
+    &lt;span class="badge"&gt;&lt;%= @unread_emails.count %&gt;&lt;/span&gt;
+  &lt;% end %&gt;
+&lt;/div&gt;
+
+&lt;!-- ¿Qué query genera esto? --&gt;
+						</code></pre>
+						<aside class="notes">
+							TODO: Mostrar ejemplo de contador tipo Gmail.
+
+							Este patrón común puede causar N+1 queries o cargar datos innecesarios.
+
+							Alternativas más eficientes:
+							- exists? para el check
+							- counter_cache o SQL COUNT para el número
 						</aside>
 					</section>
 
@@ -220,7 +323,13 @@ for user in iterator:
   # ...</span>
 						</code></pre>
 						<aside class="notes">
-							[SPEAKER NOTES: Explicar cómo Ruby reduce la "distancia cognitiva" entre pensamiento y código. Citar filosofía de Matz: "designed to make programmers happy".]
+							Ruby reduce la "distancia cognitiva" entre pensamiento y código.
+
+							Estudio MIT (2020): Comprender código activa principalmente redes cerebrales de resolución de problemas, NO las áreas de procesamiento de lenguaje natural. Programar se asemeja más a resolver un rompecabezas que a leer texto.
+
+							Por eso, lenguajes con sintaxis intuitiva y cercana a cómo pensamos los algoritmos acortan el puente entre intención y código escrito.
+
+							Filosofía de Matz: "designed to make programmers happy" - hacer más fácil el trabajo del humano a costa de que el runtime cargue con más trabajo.
 						</aside>
 					</section>
 
@@ -231,8 +340,45 @@ for user in iterator:
 						<p class="fragment">En una feature mediana: 100-200 ciclos</p>
 						<p class="fragment">En una feature grande: 1000+ ciclos</p>
 						<p class="fragment">Cada ciclo con fricción = tiempo y energía mental perdida</p>
+						<p class="fragment"><em>Cuanto más similar a "pensamiento natural" sea el código, menos carga cognitiva</em></p>
 						<aside class="notes">
-							[SPEAKER NOTES: Hacer el argumento cuantitativo. Si cada traducción toma 5 segundos extra, en 1000 ciclos = ~1.5 horas perdidas.]
+							Hacer el argumento cuantitativo: Si cada traducción toma 5 segundos extra, en 1000 ciclos = ~1.5 horas perdidas.
+
+							El estudio MIT confirma: como programar activa redes de resolución de problemas (no lenguaje), la sintaxis intuitiva acelera el mapeo mental.
+
+							Ruby's high-level abstractions reducen pasos intermedios entre "lo que quiero hacer" y "cómo se escribe".
+						</aside>
+					</section>
+
+					<!-- Slide 3.4b: Expresividad en acción -->
+					<section>
+						<h2>Expresividad en acción</h2>
+						<pre><code data-trim data-noescape class="language-ruby">
+<span class="fragment"># ❌ Forma ceremonial
+if !user.admin?
+  redirect_to root_url
+end</span>
+
+<span class="fragment"># ✅ Expresivo, casi lenguaje natural
+redirect_to root_url unless user.admin?
+# "Redirigir... a menos que usuario sea admin"</span>
+						</code></pre>
+						<pre class="fragment"><code data-trim data-noescape class="language-ruby">
+# ❌ Iteración manual
+user_ids = []
+users.each { |u| user_ids << u.id }
+
+<span class="fragment"># ✅ Idiomático, una línea
+user_ids = users.map(&:id)</span>
+						</code></pre>
+						<aside class="notes">
+							Estos ejemplos ilustran la diferencia entre código funcional y código expresivo.
+
+							unless: Se lee como lenguaje cotidiano. En español: "a menos que". En inglés: "unless". Natural.
+
+							map(&:id): Símbolo to_proc. Compacto pero claro. vs iteración manual que requiere variable temporal y múltiples líneas.
+
+							DHH: "Ruby es lo opuesto a Python (una forma obvia). Hay muchas formas de hacer casi cualquier cosa, y por eso leer y escribir Ruby es un deleite."
 						</aside>
 					</section>
 
@@ -246,8 +392,44 @@ for user in iterator:
 						<p class="fragment">Lenguaje de alto nivel</p>
 						<p class="fragment">Expresivo y cercano al lenguaje natural</p>
 						<p class="fragment">Optimizado para ser leído y entendido</p>
+						<p class="fragment"><strong>Principio de la Menor Sorpresa:</strong> código predecible reduce sorpresas</p>
 						<aside class="notes">
-							[SPEAKER NOTES: Contextualizar la filosofía de diseño de Ruby. Mencionar que el código se lee más que se escribe.]
+							Contextualizar la filosofía de diseño de Ruby. El código se lee más que se escribe.
+
+							Principio de la Menor Sorpresa (POLA): usando la sintaxis y estructuras que la comunidad espera, el código comunica su intención sin distraer con formas inusuales.
+
+							Gusto Engineering: "Usar sintaxis común evita distraer del propósito del código; las desviaciones saltan a la vista, así que más vale que sean intencionales."
+
+							DHH: "El mejor código Ruby se acerca a una forma de poesía: cada desarrollador puede desarrollar su estilo, dentro de la riqueza expresiva del lenguaje."
+
+							Código idiomático = predecible = mantenible = feliz
+						</aside>
+					</section>
+
+					<!-- Slide 3.5b: Ruby a escala: casos reales -->
+					<section>
+						<h2>Ruby a escala: casos reales</h2>
+						<div class="fragment">
+							<h3>Shopify</h3>
+							<p><em>"Rails permite enviar funcionalidades rápido sin ahogarse en boilerplate"</em></p>
+							<p><small>Billion-dollar scale con Ruby on Rails</small></p>
+						</div>
+						<div class="fragment">
+							<h3>Basecamp</h3>
+							<p><em>"Escribir código menos precioso y más exploratorio"</em></p>
+							<p><small>Spikes y prototipos en Ruby para validar enfoques</small></p>
+						</div>
+						<div class="fragment">
+							<p><strong>Estos no son juguetes. Son sistemas sirviendo millones de requests.</strong></p>
+						</div>
+						<aside class="notes">
+							Shopify: "Las convenciones opinadas permiten a los ingenieros enviar funcionalidades rápido sin ahogarse en boilerplate. Rails te permite enfocarte en el comercio, no en la plomería."
+
+							Basecamp (equipo de DHH): Hacen pequeños spikes o prototipos para responder preguntas puntuales antes de formalizar funcionalidades. Aprovechan la baja fricción de Ruby.
+
+							Estos ejemplos destruyen el mito de "Ruby no escala". El problema nunca fue Ruby, son las arquitecturas mal diseñadas.
+
+							La expresividad de Ruby les permite iterar más rápido, mantener código más limpio, y atraer mejores desarrolladores.
 						</aside>
 					</section>
 
@@ -291,13 +473,20 @@ end
 					<section>
 						<h2>Otros beneficios</h2>
 						<ul>
+							<li class="fragment">Convention over Configuration libera de decisiones triviales</li>
 							<li class="fragment">Permite diferentes niveles de abstracción según contexto</li>
 							<li class="fragment">Facilita refactoring gradual</li>
 							<li class="fragment">Reduce barreras de entrada (escribes "como piensas")</li>
 							<li class="fragment">Código más mantenible cuando se elige bien</li>
 						</ul>
 						<aside class="notes">
-							[SPEAKER NOTES: Mencionar ejemplos adicionales. El punto clave: las opciones son valiosas cuando se usan con criterio.]
+							Convention over Configuration (Rails doctrine): No decides una y otra vez sobre detalles triviales. El framework provee un "camino feliz" para funcionalidades comunes.
+
+							Esto acelera los ciclos de retroalimentación: escribes código y lo ves ejecutarse rápidamente, ideal para iterar.
+
+							Múltiples niveles de abstracción: puedes escribir código de alto nivel para prototipar, y bajar de nivel cuando necesites optimizar.
+
+							El punto clave: las opciones son valiosas cuando se usan con criterio.
 						</aside>
 					</section>
 
