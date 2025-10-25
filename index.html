@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Código idiomático - Fernando Silva Jacquier</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/solarized.css">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+
+				<!-- ============================================ -->
+				<!-- COLUMNA 1: INTRODUCCIÓN                      -->
+				<!-- ============================================ -->
+				<section>
+					<!-- Slide 1.1: Título principal -->
+					<section>
+						<h1 class="fragment">Código idiomático</h1>
+						<h3 class="fragment">El valor de poder decir lo mismo de muchas maneras</h3>
+						<h3 class="fragment">y la importancia de decirlo de la manera correcta</h3>
+						<p class="fragment">
+							<small>Fernando Silva Jacquier</small>
+						</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Introducción personal, contexto del grupo Ruby local, expectativas de la charla]
+						</aside>
+					</section>
+
+					<!-- Slide 1.2: Tres formas de presentarse -->
+					<section>
+						<h2>Una historia sobre opciones</h2>
+						<div class="fragment">
+							<h3>Yo soy Fernando</h3>
+						</div>
+						<div class="fragment">
+							<h3>Mi nombre es Fernando</h3>
+						</div>
+						<div class="fragment">
+							<h3>Me llamo Fernando</h3>
+						</div>
+						<aside class="notes">
+							[SPEAKER NOTES: Explicar cómo estas tres formas dicen lo mismo pero con sutiles diferencias. Anticipar que volveremos a esto al final.]
+						</aside>
+					</section>
+
+					<!-- Slide 1.3: El concepto -->
+					<section>
+						<h2>Lo mismo, de distintas maneras</h2>
+						<p class="fragment">En el lenguaje natural tenemos múltiples formas de expresar la misma idea</p>
+						<p class="fragment">En programación, especialmente en Ruby, también</p>
+						<p class="fragment">¿Es esto bueno o malo?</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Plantear la tensión central de la charla. Esta es la pregunta que vamos a explorar.]
+						</aside>
+					</section>
+				</section>
+
+				<!-- ============================================ -->
+				<!-- COLUMNA 2: EL PROBLEMA                       -->
+				<!-- ============================================ -->
+				<section>
+					<!-- Slide 2.1: El problema que motivó la charla -->
+					<section>
+						<h2>El problema que disparó esta charla</h2>
+						<p class="fragment">Un amigo tenía un problema de memoria en producción</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Contextualizar el problema real que motivó la charla. Hablar del memory bloat.]
+						</aside>
+					</section>
+
+					<!-- Slide 2.2: El código problemático -->
+					<section>
+						<h2>Memory bloat</h2>
+						<pre><code data-trim data-noescape class="language-ruby">
+# ❌ Carga TODOS los usuarios en memoria
+User.all.each do |user|
+  user.send_notification
+end
+
+<span class="fragment"># ✅ Procesa en batches de 1000
+User.find_each do |user|
+  user.send_notification
+end</span>
+						</code></pre>
+						<aside class="notes">
+							[SPEAKER NOTES: Explicar cómo .each carga todo en memoria vs find_each que procesa en batches. Mencionar el research sobre performance y trade-offs.]
+						</aside>
+					</section>
+
+					<!-- Slide 2.3: present? vs exist? vs any? -->
+					<section>
+						<h2>Muchas formas de verificar existencia</h2>
+						<pre><code data-trim data-noescape class="language-ruby">
+<span class="fragment"># ¿Cuál usarías?
+User.where(active: true).present?</span>
+<span class="fragment">User.where(active: true).exists?</span>
+<span class="fragment">User.where(active: true).any?</span>
+						</code></pre>
+						<aside class="notes">
+							[SPEAKER NOTES: Explicar las diferencias sutiles entre estos métodos en términos de qué hacen internamente.]
+						</aside>
+					</section>
+
+					<!-- Slide 2.4: Qué vs Cómo -->
+					<section>
+						<h2>La diferencia: ¿Qué vs Cómo?</h2>
+						<pre><code data-trim data-noescape class="language-ruby">
+# present? → Carga registros y verifica en Ruby
+User.where(active: true).present?
+# SELECT * FROM users WHERE active = true
+
+<span class="fragment"># exists? → Pregunta directamente a la DB
+User.where(active: true).exists?
+# SELECT 1 FROM users WHERE active = true LIMIT 1</span>
+
+<span class="fragment"># any? → Puede usar cualquiera de las dos estrategias
+User.where(active: true).any?</span>
+						</code></pre>
+						<aside class="notes">
+							[SPEAKER NOTES: Profundizar en cómo cada método implementa la verificación. Mostrar las queries SQL reales.]
+						</aside>
+					</section>
+
+					<!-- Slide 2.5: Enumerable#all? y vacuous truth -->
+					<section>
+						<h2>Un caso peculiar: all?</h2>
+						<pre><code data-trim data-noescape class="language-ruby">
+<span class="fragment">[].all? { |x| x > 100 }
+# => true 🤔</span>
+
+<span class="fragment"># Vacuous truth: verdad vacua
+# "Todos los elementos cumplen la condición"
+# ...porque no hay elementos que la violen</span>
+						</code></pre>
+						<aside class="notes">
+							[SPEAKER NOTES: Explicar el concepto de vacuous truth de lógica formal. Conectar con neutral elements: AND → true, suma → 0, producto → 1.]
+						</aside>
+					</section>
+
+					<!-- Slide 2.6: ¿Por qué esto es confuso? -->
+					<section>
+						<h2>El peligro de la verdad vacua</h2>
+						<pre><code data-trim data-noescape class="language-ruby">
+def all_users_are_adults?(users)
+  users.all? { |u| u.age >= 18 }
+end
+
+<span class="fragment"># ¿Qué pasa si no hay usuarios?
+all_users_are_adults?([])  # => true
+
+# "Todos los usuarios son adultos"
+# pero... ¡no hay usuarios!</span>
+						</code></pre>
+						<aside class="notes">
+							[SPEAKER NOTES: Mostrar cómo esto puede llevar a bugs sutiles. Distinguir entre lenguaje natural (presupone dominio no-vacío) y lógica formal.]
+						</aside>
+					</section>
+
+					<!-- Slide 2.7: Resumen de la sección -->
+					<section>
+						<h2>Entonces...</h2>
+						<p class="fragment">Tener múltiples formas de decir lo mismo puede causar problemas</p>
+						<p class="fragment">Diferencias sutiles en implementación</p>
+						<p class="fragment">Comportamientos contra-intuitivos</p>
+						<p class="fragment">Bugs en producción</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Transición a la siguiente sección. Plantear la pregunta: entonces ¿por qué Ruby nos da tantas opciones?]
+						</aside>
+					</section>
+				</section>
+
+				<!-- ============================================ -->
+				<!-- COLUMNA 3: EL VALOR                          -->
+				<!-- ============================================ -->
+				<section>
+					<!-- Slide 3.1: Intro al valor -->
+					<section>
+						<h2>¿Por qué tantas opciones?</h2>
+						<p class="fragment">Si las opciones causan problemas...</p>
+						<p class="fragment">¿Por qué Ruby nos da tantas?</p>
+						<p class="fragment">Debe haber un valor</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Cambio de perspectiva. Ahora vamos a ver el lado positivo de tener múltiples opciones.]
+						</aside>
+					</section>
+
+					<!-- Slide 3.2: Feedback loops -->
+					<section>
+						<h2>Ciclos de retroalimentación cortos</h2>
+						<p class="fragment">Los desarrolladores hacen ~200 micro-feedback loops por día</p>
+						<p class="fragment">Idea → Código → Validación → Refinamiento</p>
+						<p class="fragment">Cuanto más corto el ciclo, más productivos somos</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Citar el research de 2024-2025 sobre feedback loops y productividad. Mencionar estudios de eBay, Spotify sobre cognitive load.]
+						</aside>
+					</section>
+
+					<!-- Slide 3.3: Código idiomático reduce fricción -->
+					<section>
+						<h2>Expresividad = Menos fricción cognitiva</h2>
+						<pre><code data-trim data-noescape class="language-ruby">
+<span class="fragment"># Lo que piensas:
+# "Para cada usuario activo..."
+users.where(active: true).each do |user|
+  # ...
+end</span>
+
+<span class="fragment"># vs en un lenguaje menos expresivo:
+# "Inicializar iterador sobre colección filtrada..."
+iterator = users.filter(lambda u: u.active == True)
+for user in iterator:
+  # ...</span>
+						</code></pre>
+						<aside class="notes">
+							[SPEAKER NOTES: Explicar cómo Ruby reduce la "distancia cognitiva" entre pensamiento y código. Citar filosofía de Matz: "designed to make programmers happy".]
+						</aside>
+					</section>
+
+					<!-- Slide 3.4: El costo de la traducción -->
+					<section>
+						<h2>El costo de traducir pensamiento a código</h2>
+						<p class="fragment">En una feature pequeña: 10-20 ciclos de traducción</p>
+						<p class="fragment">En una feature mediana: 100-200 ciclos</p>
+						<p class="fragment">En una feature grande: 1000+ ciclos</p>
+						<p class="fragment">Cada ciclo con fricción = tiempo y energía mental perdida</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Hacer el argumento cuantitativo. Si cada traducción toma 5 segundos extra, en 1000 ciclos = ~1.5 horas perdidas.]
+						</aside>
+					</section>
+
+					<!-- Slide 3.5: Ruby's philosophy -->
+					<section>
+						<h2>La filosofía de Ruby</h2>
+						<blockquote class="fragment">
+							"Ruby is designed to make programmers happy"
+							<br>— Yukihiro "Matz" Matsumoto
+						</blockquote>
+						<p class="fragment">Lenguaje de alto nivel</p>
+						<p class="fragment">Expresivo y cercano al lenguaje natural</p>
+						<p class="fragment">Optimizado para ser leído y entendido</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Contextualizar la filosofía de diseño de Ruby. Mencionar que el código se lee más que se escribe.]
+						</aside>
+					</section>
+
+					<!-- Slide 3.6: Divergencia y convergencia -->
+					<section>
+						<h2>Divergir y converger</h2>
+						<p class="fragment">Múltiples opciones permiten <strong>divergencia</strong></p>
+						<p class="fragment">Explorar rápidamente diferentes bocetos de tu idea</p>
+						<p class="fragment">Comparar alternativas sin commitment</p>
+						<p class="fragment">Luego converger hacia la mejor solución</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Explicar design thinking aplicado a código. Citar research sobre divergent/convergent thinking en desarrollo de software.]
+						</aside>
+					</section>
+
+					<!-- Slide 3.7: Riffing -->
+					<section>
+						<h2>Ejemplo: Riffing</h2>
+						<p class="fragment">Técnica de Kasper Timm Hansen (Rails Core Team)</p>
+						<p class="fragment">"Wireframing para código"</p>
+						<pre class="fragment"><code data-trim data-noescape class="language-ruby">
+# En un scratch file:
+class UserNotifier
+  def notify_all
+    users.where(active: true).find_each do |user|
+      # ... o tal vez ...
+    end
+
+    # users.active.find_each do |user|
+    #   ...
+    # end
+  end
+end
+						</code></pre>
+						<aside class="notes">
+							[SPEAKER NOTES: Explicar el riffing: escribir código casi-ejecutable en un scratch file para explorar diseño sin distracciones. Iterar rápido, probar alternativas.]
+						</aside>
+					</section>
+
+					<!-- Slide 3.8: Más beneficios -->
+					<section>
+						<h2>Otros beneficios</h2>
+						<ul>
+							<li class="fragment">Permite diferentes niveles de abstracción según contexto</li>
+							<li class="fragment">Facilita refactoring gradual</li>
+							<li class="fragment">Reduce barreras de entrada (escribes "como piensas")</li>
+							<li class="fragment">Código más mantenible cuando se elige bien</li>
+						</ul>
+						<aside class="notes">
+							[SPEAKER NOTES: Mencionar ejemplos adicionales. El punto clave: las opciones son valiosas cuando se usan con criterio.]
+						</aside>
+					</section>
+
+					<!-- Slide 3.9: Resumen del valor -->
+					<section>
+						<h2>El valor de múltiples opciones</h2>
+						<p class="fragment">✅ Feedback loops más cortos</p>
+						<p class="fragment">✅ Menos fricción cognitiva</p>
+						<p class="fragment">✅ Divergencia y convergencia</p>
+						<p class="fragment">✅ Expresividad y mantenibilidad</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Transición: Hemos visto los problemas y el valor. Ahora la pregunta crítica: ¿cómo elegir bien?]
+						</aside>
+					</section>
+				</section>
+
+				<!-- ============================================ -->
+				<!-- COLUMNA 4: CONVERGENCIA                      -->
+				<!-- ============================================ -->
+				<section>
+					<!-- Slide 4.1: Intro -->
+					<section>
+						<h2>Entonces, ¿cómo elegir?</h2>
+						<p class="fragment">Vimos que las opciones pueden causar problemas</p>
+						<p class="fragment">Vimos que las opciones aportan valor</p>
+						<p class="fragment">La clave está en <strong>converger hacia la opción correcta</strong></p>
+						<aside class="notes">
+							[SPEAKER NOTES: Esta sección es sobre herramientas y estrategias para tomar buenas decisiones.]
+						</aside>
+					</section>
+
+					<!-- Slide 4.2: APMs -->
+					<section>
+						<h2>1. APMs (Application Performance Monitoring)</h2>
+						<p class="fragment">New Relic, Scout, Skylight, etc.</p>
+						<p class="fragment">Te muestran el impacto real en producción</p>
+						<pre class="fragment"><code data-trim data-noescape class="language-ruby">
+# APM te dice:
+# "User.all.each está causando 2GB de memory allocations"
+# "User.find_each redujo el uso de memoria en 95%"
+						</code></pre>
+						<aside class="notes">
+							[SPEAKER NOTES: Explicar cómo los APMs te dan feedback sobre performance en producción. Son tu "truth source" sobre qué funciona.]
+						</aside>
+					</section>
+
+					<!-- Slide 4.3: Linters -->
+					<section>
+						<h2>2. Linters y análisis estático</h2>
+						<p class="fragment">RuboCop, Reek, etc.</p>
+						<p class="fragment">Detectan problemas antes de que lleguen a producción</p>
+						<pre class="fragment"><code data-trim data-noescape class="language-ruby">
+# RuboCop:
+# "Use exists? instead of present? for DB existence checks"
+# "Avoid all? on potentially empty collections without guard"
+						</code></pre>
+						<aside class="notes">
+							[SPEAKER NOTES: Los linters codifican mejores prácticas de la comunidad. Te guían hacia patrones idiomáticos y seguros.]
+						</aside>
+					</section>
+
+					<!-- Slide 4.4: Tests -->
+					<section>
+						<h2>3. Tests automáticos</h2>
+						<p class="fragment">Especialmente tests de integración y performance</p>
+						<pre class="fragment"><code data-trim data-noescape class="language-ruby">
+RSpec.describe "User notifications" do
+  it "processes large user sets without memory bloat" do
+    create_list(:user, 10_000)
+
+    expect {
+      UserNotifier.notify_all
+    }.to_not exceed_memory_allocation(100.megabytes)
+  end
+end
+						</code></pre>
+						<aside class="notes">
+							[SPEAKER NOTES: Tests no solo verifican correctitud, también pueden verificar performance y uso de recursos.]
+						</aside>
+					</section>
+
+					<!-- Slide 4.5: Code review y pair programming -->
+					<section>
+						<h2>4. Revisión de código y colaboración</h2>
+						<p class="fragment">Code review</p>
+						<p class="fragment">Pair programming</p>
+						<p class="fragment">Documentación del equipo</p>
+						<p class="fragment">El conocimiento colectivo guía las decisiones</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Las herramientas automatizadas son importantes, pero el criterio humano es irreemplazable. El equipo acumula conocimiento sobre qué funciona en su contexto específico.]
+						</aside>
+					</section>
+
+					<!-- Slide 4.6: El contexto importa -->
+					<section>
+						<h2>El contexto importa</h2>
+						<p class="fragment">No hay una "mejor opción" universal</p>
+						<pre class="fragment"><code data-trim data-noescape class="language-ruby">
+# Para 10 registros:
+User.all.each { ... }  # Está bien
+
+# Para 10,000 registros:
+User.find_each { ... }  # Necesario
+
+# Para verificar existencia:
+User.exists?(email: email)  # Eficiente
+
+# Para usar los datos después:
+User.where(email: email).present?  # Justificado
+						</code></pre>
+						<aside class="notes">
+							[SPEAKER NOTES: La "mejor opción" depende del volumen de datos, requisitos de performance, legibilidad en contexto, etc.]
+						</aside>
+					</section>
+
+					<!-- Slide 4.7: Resumen convergencia -->
+					<section>
+						<h2>Herramientas para converger</h2>
+						<p class="fragment">APMs para feedback de producción</p>
+						<p class="fragment">Linters para mejores prácticas</p>
+						<p class="fragment">Tests para verificar comportamiento</p>
+						<p class="fragment">Revisión humana para contexto</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Estas herramientas trabajan juntas para ayudarnos a tomar decisiones informadas.]
+						</aside>
+					</section>
+				</section>
+
+				<!-- ============================================ -->
+				<!-- COLUMNA 5: CIERRE                            -->
+				<!-- ============================================ -->
+				<section>
+					<!-- Slide 5.1: Volver al inicio -->
+					<section>
+						<h2>Volviendo al inicio...</h2>
+						<div class="fragment">
+							<h3>Yo soy Fernando</h3>
+						</div>
+						<div class="fragment">
+							<h3>Mi nombre es Fernando</h3>
+						</div>
+						<div class="fragment">
+							<h3>Me llamo Fernando</h3>
+						</div>
+						<aside class="notes">
+							[SPEAKER NOTES: Cerrar el círculo. Retomar las tres formas de presentarse del inicio.]
+						</aside>
+					</section>
+
+					<!-- Slide 5.2: La elección contextual -->
+					<section>
+						<h2>La elección depende del contexto</h2>
+						<p class="fragment">Tal vez naturalmente me sale decir "Yo soy Fernando"</p>
+						<p class="fragment">Pero hoy, frente a un público hispanoparlante en Argentina...</p>
+						<p class="fragment">Elijo "Me llamo Fernando"</p>
+						<p class="fragment">Y si estuviera en una conferencia internacional en inglés, diría "I am Fernando"</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Explicar cómo el contexto (audiencia, formalidad, idioma) determina la mejor opción. Paralelismo con código: el contexto determina qué es idiomático.]
+						</aside>
+					</section>
+
+					<!-- Slide 5.3: Mensaje principal -->
+					<section>
+						<h2>Lo que nos llevamos</h2>
+						<p class="fragment">Múltiples formas de expresar lo mismo = poder</p>
+						<p class="fragment">Pero con gran poder viene gran responsabilidad</p>
+						<p class="fragment">Elige con criterio, mide, aprende</p>
+						<p class="fragment">El código idiomático no es "el único camino", es "el camino apropiado para este contexto"</p>
+						<aside class="notes">
+							[SPEAKER NOTES: Mensaje de cierre. Énfasis en que idiomatic != dogmático. Es contextual y pragmático.]
+						</aside>
+					</section>
+
+					<!-- Slide 5.4: Call to action -->
+					<section>
+						<h2>¿Preguntas?</h2>
+						<p class="fragment">
+							<small>Fernando Silva Jacquier</small><br>
+							<small>fesilvajacquier@gmail.com</small><br>
+							<small>github.com/fesilvajacquier</small>
+						</p>
+						<p class="fragment"><small>Referencias y recursos en el repositorio de esta charla</small></p>
+						<aside class="notes">
+							[SPEAKER NOTES: Abrir Q&A. Estar preparado para preguntas sobre casos específicos, herramientas recomendadas, etc.]
+						</aside>
+					</section>
+				</section>
+
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+
+				// Enable fragments for animations
+				fragments: true,
+
+				// Show slide numbers
+				slideNumber: 'c/t',
+
+				// Show controls
+				controls: true,
+
+				// Enable progress bar
+				progress: true,
+
+				// Center slides on the screen
+				center: true,
+
+				// Transition style
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Transition speed
+				transitionSpeed: 'default', // default/fast/slow
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+			});
+		</script>
+	</body>
+</html>
