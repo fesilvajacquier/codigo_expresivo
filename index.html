@@ -241,9 +241,11 @@
 						</aside>
 					</section>
 					<section>
-						<h2>Pero todavía no tenía suficiente madera para la charla</h2>
+						<h2>Pero todavía sentía que no tenía suficiente</h2>
+            <p class="fragment">Para peor... me encontré con que este <a href="https://github.com/fastruby/fast-ruby">repositorio de Fast Ruby</a> donde, de alguna manera, ya se hizo lo que buscaba.</p>
             <p class="fragment">Así que dejé descansar a la idea un rato.</p>
             <p class="fragment">Y cuando volví a ella, me acerque desde más lejos...</p>
+            <p class="fragment"></p>
 						<aside class="notes">
 							Aún no era suficiente para la charla que imaginaba
               El giro: de los problemas al valor
@@ -431,7 +433,7 @@
 					</section>
 					<section>
 						<h3><a href="https://martinfowler.com/articles/developer-effectiveness.html" target="_blank" rel="noopener">Maximizing Developer Effectiveness</a></h3>
-            <small>Por Tim Cochran</small>
+            <small>Por Tim Cochran para <a href="https://martinfowler.com/" target="_blank" rel="noopener">https://martinfowler.com/</a></small>
             <img src="assets/feedback-loops.jpg" alt="Feedback loops">
 						<aside class="notes">
               - Being productive motivates developers. Without the friction, they have time to think creatively and apply themselves
@@ -449,6 +451,45 @@
 						</aside>
 					</section>
 				</section>
+        <section>
+          <section>
+            <h2>Lo valioso de la expresividad - Identidad y búsqueda estética</h2>
+          </section>
+          <section>
+            <table>
+              <thead>
+                <tr>
+                  <th>Malasio</th>
+                  <th>Español</th>
+                </tr>
+                <tr>
+                  <td>saya <strong>keluar</strong></td>
+                  <td>estoy <strong>fuera</strong></td>
+                </tr>
+                <tr>
+                  <td>pintu <strong>keluar</strong></td>
+                  <td>puerta de <strong>salida</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>keluar</strong></td>
+                  <td><strong>salir</strong></td>
+                </tr>
+              </thead>
+            </table>
+          </section>
+          <section>
+            <h3><a href="https://world.hey.com/dhh/a-writer-s-ruby-2050b634" target="_blank" rel="noopener">A writer's Ruby</a></h3>
+            <small>Por David Heinemeier Hansson</small>
+            <blockquote>
+              > The best code to me is indeed its own form of poetry, and style is an integral part of such expression.
+            </blockquote>
+            <aside class="notes">
+            </aside>
+          </section>
+          <section>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/7gcbaNlqdLE?si=IB08R-EA8beUktv-&amp;start=233" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          </section>
+        </section>
 				<section>
 					<section>
 						<h2>¿Cómo elegir la correcta?</h2>
@@ -526,7 +567,9 @@
 
             <pre class="fragment"><code class="language-ruby" data-trim>
               # ...
-              @unread_count = Current.user.emails.unread.length
+              if unread_emails = Current.user.emails.unread.presence
+                @unread_count = unread_emails.length
+              end
               # ...
             </code></pre>
 						<aside class="notes">
@@ -543,6 +586,8 @@
 							Para performance: medir y optimizar con datos
 						</aside>
 					</section>
+				</section>
+				<section>
           <section>
             <h3><a href="https://www.mural.co/blog/divergent-convergent-thinking" target="_blank" rel="noopener">Divergent and Convergent Thinking</a></h3>
             <p><small>Por Mural</small></p>
@@ -551,8 +596,6 @@
               Diverge and converge
             </aside>
           </section>
-				</section>
-				<section>
 					<section>
 						<h2>Conclusión</h2>
 						<p class="fragment">Escriban código como se les cante</p>
@@ -563,6 +606,10 @@
 					</section>
 					<section>
 						<h2>¿Preguntas?</h2>
+            <p>
+              <small>Presentación: <a href="https://fesilvajacquier.github.io/codigo_expresivo/" target="_blank" rel="noopener">https://fesilvajacquier.github.io/codigo_expresivo</a></small>
+              <small>Repo: <a href="https://github.com/fesilvajacquier/codigo_expresivo" target="_blank" rel="noopener">https://github.com/fesilvajacquier/codigo_expresivo</a></small>
+            </p>
 					</section>
 				</section>
 			</div>
