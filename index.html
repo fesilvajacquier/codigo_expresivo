@@ -29,6 +29,14 @@
               <div>Consultor</div>
               <div>Teacher en <a href="https://www.lewagon.com/" target="_blank" rel="noopener">Le Wagon</a></div>
             </small>
+            <aside class="notes">
+              Algunos aclaraciones previas:<br>
+              - Los ejemplos de código están simplificados o exagerados para ilustrar un punto<br>
+              - Voy a mencionar muchos recursos. Todos los links estarán en la presentación<br>
+              - Uso muchos anglicismos<br>
+              <br>
+              La charla es un poco meta. Al principio, habla un poco de sí misma.
+            </aside>
           </section>
 				</section>
 				<section>
@@ -37,7 +45,7 @@
               > La aplicación me está crasheando un montón.
             </blockquote>
             <aside class="notes">
-              Así me lo planteo un amigo...
+              El origen de la charla está en que un amigo me planteo esto.
             </aside>
           </section>
 					<section>
@@ -48,7 +56,7 @@
               end
 						</code></pre>
 						<aside class="notes">
-							El código que dio origen a la charla
+              Empezamos a investigar una de las primeras cosas que encontramos fue esto.
 						</aside>
 					</section>
           <section data-auto-animate>
@@ -60,7 +68,7 @@
               end
 						</code></pre>
 						<aside class="notes">
-							find_each procesa en lotes, permitiendo que el garbage collector libere memoria
+							> Por suerte, la solución a esto es fácil.
 						</aside>
 					</section>
           <section data-auto-animate>
@@ -72,7 +80,7 @@
               end
 						</code></pre>
 						<aside class="notes">
-							find_each procesa en lotes, permitiendo que el garbage collector libere memoria
+							> Por suerte, la solución a esto es fácil.
 						</aside>
 					</section>
 					<section>
@@ -101,22 +109,25 @@
                 <span class="fragment fade-in-then-out">👤👤👤👤👤👤👤</span>
               </div>
             </div>
-						<aside class="notes">
-							Primero pocos usuarios (funciona), luego muchos (problema de memoria)
-						</aside>
 					</section>
 					<section>
 						<h4>Una charla sobre performance</h4>
 						<p class="fragment">Ya está, con esto puedo hacer una charla sobre los costos de lo idiomático</p>
 						<aside class="notes">
-							Primera idea: hacer una charla sobre performance
+							Terminamos la reunión. Tomé mis notas. Y me olvidé de la charla por un rato.
 						</aside>
 					</section>
 					<section>
             <h3>Poco después encontré el segundo input de la charla</h3>
             <iframe width="560" height="315" src="https://www.youtube.com/embed/GpaSq6xW8wQ?si=UBfICAimSSZ7fJfC" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             <aside class="notes">
-              Habla de que parte del trabajo preventivo de performance es ser más intencional sobre que método usar.
+              Yendo a la oftalmóloga escuché este podcast.<br>
+              <br>
+              Pequeño paréntesis: Hacer mención a lo de la comunidad.<br>
+              <br>
+              Habla de _everyday performance_
+              <br>
+              Y de que los developers a veces confunden el outcome con el proceso.
             </aside>
 					</section>
           <section data-auto-animate>
@@ -150,8 +161,10 @@
               => 32107
 						</code></pre>
 						<aside class="notes">
-              count: Siempre hace una query a la DB
-              length: Si la colección está cargada, hace array.length, sino la carga en memoria y luego hace array.length
+              count: Siempre hace una query a la DB<br>
+              <br>
+              length: Si la colección está cargada, hace array.length, sino la carga en memoria y luego hace array.length<br>
+              <br>
               size: Si está cargado en memoria, hace array.size, sino hace count
 						</aside>
 					</section>
@@ -169,8 +182,10 @@
               => 32107
 						</code></pre>
 						<aside class="notes">
-              count: Siempre hace una query a la DB
-              length: Si la colección está cargada, hace array.length, sino la carga en memoria y luego hace array.length
+              count: Siempre hace una query a la DB<br>
+              <br>
+              length: Si la colección está cargada, hace array.length, sino la carga en memoria y luego hace array.length<br>
+              <br>
               size: Si está cargado en memoria, hace array.size, sino hace count
 						</aside>
 					</section>
@@ -195,8 +210,10 @@
               => 32107
 						</code></pre>
 						<aside class="notes">
-              count: Siempre hace una query a la DB
-              length: Si la colección está cargada, hace array.length, sino la carga en memoria y luego hace array.length
+              count: Siempre hace una query a la DB<br>
+              <br>
+              length: Si la colección está cargada, hace array.length, sino la carga en memoria y luego hace array.length<br>
+              <br>
               size: Si está cargado en memoria, hace array.size, sino hace count
 						</aside>
 					</section>
@@ -207,14 +224,14 @@
 							<li class="fragment">El <strong>contexto</strong> es importante</li>
 						</ul>
 						<aside class="notes">
-							Me di cuenta: los takeaways eran los mismos
-						</aside>
+              De nuevo, tomé notas y dejé reposar la idea de la charla por un rato.
+            </aside>
 					</section>
 					<section>
 						<h3>Un esfuercito más</h3>
 						<p class="fragment">Busqué más ejemplos...</p>
 						<aside class="notes">
-							Buscando más ejemplos de problemas idiomáticos
+							A ver si encontraba algo que no tenga que ver exclusivamente con performance.
 						</aside>
 					</section>
 					<section data-auto-animate>
@@ -243,12 +260,14 @@
 					<section>
 						<h2>Pero todavía sentía que no tenía suficiente</h2>
             <p class="fragment">Para peor... me encontré con que este <a href="https://github.com/fastruby/fast-ruby">repositorio de Fast Ruby</a> donde, de alguna manera, ya se hizo lo que buscaba.</p>
-            <p class="fragment">Así que dejé descansar a la idea un rato.</p>
-            <p class="fragment">Y cuando volví a ella, me acerque desde más lejos...</p>
-            <p class="fragment"></p>
+            <p class="fragment">Así que dejé descansar a la idea un rato más.</p>
 						<aside class="notes">
-							Aún no era suficiente para la charla que imaginaba
-              El giro: de los problemas al valor
+              Y cuando volví a ella, me acerque desde más lejos...<br>
+              <br>
+							Empecé a explorar los campos semánticos y léxicos. De costos a problemas, de problemas a soluciones, de soluciones a valor.<br>
+              De lo idiomático a lo expresivo.<br>
+              <br>
+              Y empecé a buscar entre mis notas "cosas" que podían ser aledañas a lo expresivo.
 						</aside>
 					</section>
 				</section>
@@ -271,8 +290,7 @@
               </div>
             </div>
 						<aside class="notes">
-							Con el código es lo mismo
-              Link: https://ddooss.org/textos/entrevistas/entrevista-a-francis-bacon-1
+							Entre mis notas encontré esta cita de Francis Bacon.
 						</aside>
 					</section>
 					<section data-auto-animate>
@@ -298,13 +316,13 @@
               <small><a href="https://github.com/kaspth/riffing-on-rails" target="_blank" rel="noopener">Repo de Github</a></small> | <small><a href="https://kaspth.com/posts/my-intro-to-domain-modeling-with-riffing-the-bike-shed-railsconf-talk" target="_blank" rel="noopener">Post de Kasper</a></small> | <small><a href="https://kaspthrb.gumroad.com/l/domain-model-riffing" target="_blank" rel="noopener">Workshop</a></small>
             </div>
 						<aside class="notes">
-							Más allá de la primera mancha: refinamiento iterativo
+							También encontré mis notas de cuando hice el workshop de Domain Modeling with Riffing.
 						</aside>
 					</section>
           <section>
             <img src="assets/sketch.jpg" alt="Scratch file" style="width: 50%; height: 50%;">
             <aside class="notes">
-              Riffing is to development what wireframing is to UI design. It's a fast, low-fidelity design technique for exploring, validating, and communicating design concepts within a tight feedback loop.
+              > Riffing is to development what wireframing is to UI design. It's a fast, low-fidelity design technique for exploring, validating, and communicating design concepts within a tight feedback loop.
             </aside>
           </section>
 					<section>
@@ -391,28 +409,28 @@
               end
 						</code></pre>
 						<aside class="notes">
-              Ejemplo: build a timeline of items that can be favorited by a user
-							Código casi-ejecutable para explorar diseños sin distracciones
+              Lo más interesante del workshop es que proponía hacer este mismo ejercicio varias veces. Con el mismo contexto y con las mismas reglas.<br>
+              <br>
+              Volver para atrás para mencionar lo de "getting things out of my head".<br>
+              <br>
+              Mencionar lo de figuring out names, responsibilities, etc.
 						</aside>
 					</section>
 				</section>
 				<section>
 					<section>
 						<h2>Lo valioso de la expresividad -  Reducción de la carga cognitiva y feedback loops más cortos</h2>
-						<aside class="notes">
-							Segundo gran beneficio de la expresividad
-						</aside>
 					</section>
 					<section>
 						<h3>Carga cognitiva</h3>
             <img src="assets/cognitiveloadv6.jpg" alt="Carga cognitiva" style="width: 50%; height: 50%;">
             <a href="https://github.com/zakirullin/cognitive-load" target="_blank" rel="noopener">https://github.com/zakirullin/cognitive-load</a>
 						<aside class="notes">
-              Intrinsic - caused by the inherent difficulty of a task. It can't be reduced, it's at the very heart of software development.
+              Intrinsic - caused by the inherent difficulty of a task. It can't be reduced, it's at the very heart of software development. <br>
 
-              Extraneous - created by the way the information is presented. Caused by factors not directly relevant to the task, such as smart author's quirks. Can be greatly reduced. We will focus on this type of cognitive load.
-
-              When reading code, you put things like values of variables, control flow logic and call sequences into your head. The average person can hold roughly four such chunks in working memory. Once the cognitive load reaches this threshold, it becomes much harder to understand things.
+              Extraneous - created by the way the information is presented. Caused by factors not directly relevant to the task.<br>
+              <br>
+              Mencionar lo de four chunks
 						</aside>
 					</section>
 					<section>
@@ -428,7 +446,7 @@
               users.ids
 						</code></pre>
 						<aside class="notes">
-							Ruby permite enfocarse en el problema, no en la sintaxis
+              When reading code, you put things like values of variables, control flow logic and call sequences into your head. The average person can hold roughly four such chunks in working memory. Once the cognitive load reaches this threshold, it becomes much harder to understand things.
 						</aside>
 					</section>
 					<section>
@@ -436,8 +454,11 @@
             <small>Por Tim Cochran para <a href="https://martinfowler.com/" target="_blank" rel="noopener">https://martinfowler.com/</a></small>
             <img src="assets/feedback-loops.jpg" alt="Feedback loops">
 						<aside class="notes">
-              - Being productive motivates developers. Without the friction, they have time to think creatively and apply themselves
-              - From what I have observed, you have to nail the basics, the things that developers do 10, 100 or 200 times a day. I call them micro-feedback loops. This could be running a unit test while fixing a bug. It could be seeing a code change reflected in your local environment or development environments. It could be refreshing data in your environment.
+              - Being productive motivates developers. Without the friction, they have time to think creatively and apply themselves<br>
+              <br>
+              - From what I have observed, you have to nail the basics, the things that developers do 10, 100 or 200 times a day. I call them micro-feedback loops. This could be running a unit test while fixing a bug. It could be seeing a code change reflected in your local environment or development environments. It could be refreshing data in your environment.<br>
+              <br>
+              Mencionar que una de las cosas que se pueden optimizar es cuanto tardamos en "traducir" nuestro pensamiento a código. Y mientras más expresivo sea el lenguaje, menos tiempo tardamos en hacerlo.
 						</aside>
 					</section>
 					<section>
@@ -446,14 +467,18 @@
             <small>Por Abi Noda (DX), Margaret-Anne Storey (University of Victoria), Nicole Forsgren (Microsoft Research), Michaela Greiler (DX)</small>
             <img src="assets/devex.jpg" alt="DevEx: What Actually Drives Productivity" style="width: 50%; height: 50%;">
 						<aside class="notes">
-							while the sources do not assess specific language expressiveness, they imply that the clarity, organization, and ease of understanding of the code and the supporting systems are crucial factors that directly manage cognitive load, which is the mechanism through which developer productivity is impacted.
-							If you view "code expressiveness" or "flexibility" metaphorically as characteristics that either make the code base exceptionally clear (well-organized) or, conversely, highly abstract and difficult to decipher (complex or poorly documented), the framework suggests: If expressiveness leads to simpler, more organized code that is easy to understand, it would likely reduce cognitive load and boost productivity. If, however, flexibility leads to overly complex, fragmented, or poorly documented systems, it would likely increase cognitive load and thus impede effectiveness.
+              flow state, a mental state in which a person performing an activity is fully immersed in a feeling of energized focus, full involvement, and enjoyment<br>
+              <br>
+              If expressiveness leads to simpler, more organized code that is easy to understand, it would likely reduce cognitive load and boost productivity. If, however, flexibility leads to overly complex, fragmented, or poorly documented systems, it would likely increase cognitive load and thus impede effectiveness.
 						</aside>
 					</section>
 				</section>
         <section>
           <section>
             <h2>Lo valioso de la expresividad - Identidad y búsqueda estética</h2>
+            <aside class="notes">
+              Este segmento casi no lo incluyo hasta que...
+            </aside>
           </section>
           <section>
             <table>
@@ -476,18 +501,31 @@
                 </tr>
               </thead>
             </table>
+            <aside class="notes">
+              ... me acordé de esta anécdota con Dave.
+              <br>
+              Reconocí la palabra keluar cuando él hablaba con otra persona.<br>
+              Le pregunté si le había dicho algo de la salida... <br>
+              Y terminamos hablando de literatura malaya. Y de cómo estaba límitada por su propia lengua.
+            </aside>
           </section>
           <section>
             <h3><a href="https://world.hey.com/dhh/a-writer-s-ruby-2050b634" target="_blank" rel="noopener">A writer's Ruby</a></h3>
             <small>Por David Heinemeier Hansson</small>
             <blockquote>
-              > The best code to me is indeed its own form of poetry, and style is an integral part of such expression.
+              > Whereas Python’s motto has long been “there should be one – and preferably only one – obvious way to do it”, Ruby is the exact opposite. There are many ways to do almost everything, and it’s why reading and writing Ruby is such a delight to people like me who strive to write code as an author more often than as an engineer.
             </blockquote>
             <aside class="notes">
+              Este es el artículo donde presenta rubocop-rails-omakase .
             </aside>
           </section>
           <section>
+            <h3>Los dialectos de Ruby</h3>
             <iframe width="560" height="315" src="https://www.youtube.com/embed/7gcbaNlqdLE?si=IB08R-EA8beUktv-&amp;start=233" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <aside class="notes">
+              Idiom puede ser "expresión" (tiny design pattern) o "dialecto".<br>
+              Esta charla habla de los dos conceptos.
+            </aside>
           </section>
         </section>
 				<section>
@@ -590,19 +628,18 @@
 				<section>
           <section>
             <h3><a href="https://www.mural.co/blog/divergent-convergent-thinking" target="_blank" rel="noopener">Divergent and Convergent Thinking</a></h3>
-            <p><small>Por Mural</small></p>
+            <p><small>Por Bryan Kitch</small></p>
             <img src="assets/diverge_converge.jpg" alt="Diverge and converge">
             <aside class="notes">
-              Diverge and converge
+              Divergence is the process of exploring and generating a wide range of ideas and possibilities without any judgment or criticism. Divergent thinking allows designers to expand the possibilities and consider different perspectives, angles, and dimensions of the problem.<br>
+              <br>
+              Convergent thinking refers to the process of selecting, evaluating, and refining the most promising ideas from the divergent phase. It involves narrowing down and refining possibilities by selecting the best ideas and combining them to create a coherent and effective solution.
             </aside>
           </section>
 					<section>
 						<h2>Conclusión</h2>
 						<p class="fragment">Escriban código como se les cante</p>
 						<p class="fragment">Pero sepan que hay maneras más costosas que otras</p>
-						<aside class="notes">
-							Mensaje final: libertad con responsabilidad
-						</aside>
 					</section>
 					<section>
 						<h2>¿Preguntas?</h2>
